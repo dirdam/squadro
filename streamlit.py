@@ -2,8 +2,6 @@ import streamlit as st
 import streamlit.components.v1 as components
 import pandas as pd
 import os
-import seaborn as sns
-import matplotlib.pyplot as plt
 import src.utils as utils
 
 st.set_page_config(
@@ -15,7 +13,6 @@ st.set_page_config(
         'Get help': "https://dirdam.github.io/contact.html",
         'About': f"""This app was proudly developed by [Adrián Jiménez Pascual](https://dirdam.github.io/)."""
     })
-
 
 # Set Kaggle environment variables
 os.environ["KAGGLE_USERNAME"] = st.secrets["kaggle_username"]
@@ -33,6 +30,25 @@ utils.download_kaggle_dataset(dataset_name, download_path)
 df = pd.read_csv(f'{download_path}/{file_name}')
 df['moves'] = df['record'].str.len()//2
 
+# Sidebar content
+st.markdown( # Center the sidebar content
+    """
+    <style>
+        [data-testid=stSidebar] {
+            text-align: center;
+            display: block;
+            margin-left: auto;
+            margin-right: auto;
+            width: 100%;
+        }
+    </style>
+    """, unsafe_allow_html=True
+)
+with st.sidebar:
+    st.markdown('''# For and by [Squadristas](https://boardgamearena.com/gamepanel?game=squadro)''')
+    st.image('https://dirdam.github.io/images/logo_squadro_transparent.png', use_column_width=True)
+
+# Main content
 st.title('Squadro Statistics Visualizer')
 st.markdown('All the statistics shown here come from the latest version of the [Squadro games played in BGA](https://www.kaggle.com/datasets/dirdam/squadro-games-played-in-bga/data) dataset periodically uploaded to Kaggle.')
 st.markdown('As explained in the dataset description, the dataset contains information about most Squadro games played in [Board Game Arena](https://boardgamearena.com/) since it was made available on `14-12-2020`.')
@@ -41,7 +57,7 @@ st.markdown('As explained in the dataset description, the dataset contains infor
 st.markdown('---')
 st.markdown('## Games won by hand and color')
 st.markdown('The tables show the _victories_ per _color_ and _hand_ combination.')
-threshold = st.slider('Restrict the tables values to games where both players had ELO greater than:', 0, 500, value=0, step=50)
+threshold = st.slider('Restrict the tables values to games where both players had ELO greater than:', 0, 500, value=100, step=50)
 temp = df[(df['elo_winner'] >= threshold) & (df['elo_loser'] >= threshold)].copy()
 
 cross_table = utils.create_wins_cross_table(temp)
@@ -57,7 +73,8 @@ with per_col:
 
 # Games length statistics
 st.markdown('## Games length histogram')
-st.markdown('''- **x-axis**: number of hands/moves (_plies_) per game.
+st.markdown(f'''Visualization of how long games take to play when both players have ELO greater than {threshold}.
+- **x-axis**: number of hands/moves (_plies_) per game.
 - **y-axis**: number of games.''')
 ax = utils.plot_hist(temp['moves'], bin_width=1, title='Squadro moves histogram')
 st.pyplot(ax.figure)
@@ -86,11 +103,12 @@ with cols[2]:
 st.dataframe(df_replay)
 
 game_selection = st.selectbox('Select a game to visualize:', df_replay.index, index=None, placeholder="Choose or type row number", format_func=lambda x: f'{x} - "{df_replay.loc[x]["winner"]}" vs "{df_replay.loc[x]["loser"]}"')
-if game_selection:
-    print(df.loc[game_selection])
-    st.markdown(f'### Replay of _{df_replay.loc[game_selection]["winner"]}_ vs _{df_replay.loc[game_selection]["loser"]}_')
-    st.markdown('''- Click `▶️` to advance and `◀️` to go backwards. (`▶️▶️` and `◀️◀️` jump faster)
-- Click the top right corner of the board to see the game statistics for `Moves to finish`.''')
+if game_selection is not None:
     game_record = df.loc[game_selection]['record']
+    winner_color = 'red' if game_record[0] == 'r' else 'yellow'
+    st.markdown(f'### Replay of _{df_replay.loc[game_selection]["winner"]}_ vs _{df_replay.loc[game_selection]["loser"]}_')
+    st.markdown(f'''- Click `▶️` to advance and `◀️` to go backwards. (`▶️▶️` and `◀️◀️` jump faster)
+- Click the top right corner of the board to see the game statistics for `Moves to finish`.
+- Result: _**{df.loc[game_selection]['winner']}**_ (_{winner_color}_) wins.''')
     game_record = utils.code_to_old(game_record)
     components.iframe(f'https://dirdam.github.io/games/squadro_replay.html?code={game_record}', height=600)
