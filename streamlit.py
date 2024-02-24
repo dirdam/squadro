@@ -51,7 +51,8 @@ with st.sidebar:
 # Main content
 st.title('Squadro Statistics Visualizer')
 st.markdown('All the statistics shown here come from the latest version of the [Squadro games played in BGA](https://www.kaggle.com/datasets/dirdam/squadro-games-played-in-bga/data) dataset periodically uploaded to Kaggle.')
-st.markdown('As explained in the dataset description, the dataset contains information about most Squadro games played in [Board Game Arena](https://boardgamearena.com/) since it was made available on `14-12-2020`.')
+st.markdown(f'''As explained in the dataset description, the dataset contains information about most Squadro games played in [Board Game Arena](https://boardgamearena.com/).
+- Data coverage range: **`14-12-2020`** through **`{pd.to_datetime(df['date']).max().date().strftime('%d-%m-%Y')}`**.''')
 
 # Cross tables
 st.markdown('---')
