@@ -107,7 +107,8 @@ st.dataframe(df_replay)
 game_selection = st.selectbox('Select a game to visualize from the upper table:', df_replay.index, index=None, placeholder="Choose or type row number", format_func=lambda x: f'{x} - "{df_replay.loc[x]["winner"]}" vs "{df_replay.loc[x]["loser"]}"')
 if game_selection is not None:
     game_record = df.loc[game_selection]['record']
-    winner_color = 'red' if game_record[0] == 'r' else 'yellow'
+    winner_is_first_hand = df.loc[game_selection]['winner'] == df.loc[game_selection]['first_hand']
+    winner_color = 'red' if ((game_record[0] == 'r' and winner_is_first_hand) or (game_record[0] == 'y' and not winner_is_first_hand)) else 'yellow'
     st.markdown(f'### Replay of _{df_replay.loc[game_selection]["winner"]}_ vs _{df_replay.loc[game_selection]["loser"]}_')
     st.markdown(f'''- Click `▶️` to advance and `◀️` to go backwards. (`▶️▶️` and `◀️◀️` jump faster)
 - Click the top right corner of the board to see the game statistics for `Moves to finish`.
