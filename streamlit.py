@@ -83,11 +83,12 @@ st.pyplot(ax.figure)
 # Replay
 st.markdown('---')
 st.markdown('## Replay specific game')
+st.markdown('Filter and choose which game you would like to replay.')
 df_replay_all = df[['date', 'winner', 'loser', 'elo_winner', 'elo_loser', 'moves']].copy()
 df_replay = df_replay_all.copy()
 cols = st.columns(3)
 with cols[0]:
-    date = st.date_input('Select date:', value=None, min_value=pd.to_datetime(df_replay['date'].min()), max_value=pd.to_datetime(df_replay['date'].max()))
+    date = st.date_input('Select date (optional):', value=None, min_value=pd.to_datetime(df_replay['date'].min()), max_value=pd.to_datetime(df_replay['date'].max()))
     if date: # If date is selected, filter any game played on that date, regardless the hour
         df_replay = df_replay[pd.to_datetime(df_replay['date']).dt.date == date]
 with cols[1]:
@@ -103,7 +104,7 @@ with cols[2]:
 
 st.dataframe(df_replay)
 
-game_selection = st.selectbox('Select a game to visualize:', df_replay.index, index=None, placeholder="Choose or type row number", format_func=lambda x: f'{x} - "{df_replay.loc[x]["winner"]}" vs "{df_replay.loc[x]["loser"]}"')
+game_selection = st.selectbox('Select a game to visualize from the upper table:', df_replay.index, index=None, placeholder="Choose or type row number", format_func=lambda x: f'{x} - "{df_replay.loc[x]["winner"]}" vs "{df_replay.loc[x]["loser"]}"')
 if game_selection is not None:
     game_record = df.loc[game_selection]['record']
     winner_color = 'red' if game_record[0] == 'r' else 'yellow'
