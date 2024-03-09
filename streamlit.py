@@ -24,10 +24,9 @@ download_path = 'data' # Local path where the dataset will be downloaded
 file_name = 'Squadro_BGA_history.csv' # Actual file name in the dataset
 
 # Download dataset
-utils.download_kaggle_dataset(dataset_name, download_path)
+df = utils.download_kaggle_dataset(dataset_name, download_path, file_name)
 
-# Load the dataset
-df = pd.read_csv(f'{download_path}/{file_name}')
+# Add column
 df['moves'] = df['record'].str.len()//2
 
 # Sidebar content

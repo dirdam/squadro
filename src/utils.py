@@ -1,14 +1,18 @@
+import streamlit as st
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 
-def download_kaggle_dataset(dataset_name, path='data'):
+@st.cache_data
+def download_kaggle_dataset(dataset_name, path='data', file_name=None):
     """Download a Kaggle dataset to a specified path."""
     from kaggle.api.kaggle_api_extended import KaggleApi
     # No need to manually authenticate since they've been set as environment variables
     api = KaggleApi()
     api.authenticate()
     api.dataset_download_files(dataset_name, path=path, unzip=True)
+    df = pd.read_csv(f'{path}/{file_name}')
+    return df
 
 def create_wins_cross_table(df):
     """Create a cross table of the first hand color and the winning hand from a dataset of games played in BGA"""
