@@ -14,6 +14,7 @@ def download_kaggle_dataset(dataset_name, path='data', file_name=None):
     df = pd.read_csv(f'{path}/{file_name}')
     return df
 
+@st.cache_data
 def create_wins_cross_table(df):
     """Create a cross table of the first hand color and the winning hand from a dataset of games played in BGA"""
     # First hand colors
@@ -32,6 +33,7 @@ def create_wins_cross_table(df):
 
     return cross_table
 
+@st.cache_data
 def table_to_percentage(table):
     """Convert a table to percentage"""
     res = table / table.loc['Total', 'Total'] * 100
