@@ -27,6 +27,8 @@ file_name = 'Squadro_BGA_history.csv' # Actual file name in the dataset
 if 'data_downloaded' not in st.session_state:
     df = utils.download_kaggle_dataset(dataset_name, download_path, file_name)
     st.session_state.data_downloaded = True
+else:
+    df = pd.read_csv(f'{download_path}/{file_name}')
 
 # Add column
 df['moves'] = df['record'].str.len()//2
