@@ -34,7 +34,8 @@ def create_wins_cross_table(df):
 
 def table_to_percentage(table):
     """Convert a table to percentage"""
-    return (table / table.loc['Total', 'Total'] * 100).applymap(lambda x: f"{x:.2f}%")
+    res = table / table.loc['Total', 'Total'] * 100
+    return res.apply(lambda col: col.apply(lambda x: f"{x:.2f}%"))
 
 def total_color(column):
     color_total = 'rgba(150,150,150, 0.5)'

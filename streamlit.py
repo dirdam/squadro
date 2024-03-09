@@ -51,7 +51,8 @@ with st.sidebar:
 st.title('Squadro Statistics Visualizer')
 st.markdown('All the statistics shown here come from the latest version of the [Squadro games played in BGA](https://www.kaggle.com/datasets/dirdam/squadro-games-played-in-bga/data) dataset periodically uploaded to Kaggle.')
 st.markdown(f'''As explained in the dataset description, the dataset contains information about most Squadro games played in [Board Game Arena](https://boardgamearena.com/).
-- Data coverage range: **`14-12-2020`** through **`{pd.to_datetime(df['date']).max().date().strftime('%d-%m-%Y')}`**.''')
+- Data coverage range: **`14-12-2020`** through **`{pd.to_datetime(df['date']).max().date().strftime('%d-%m-%Y')}`**.
+- Number of games registered: **`{len(df):,.0f}`** games.''')
 
 # Cross tables
 st.markdown('---')
@@ -73,7 +74,7 @@ with per_col:
 
 # Games length statistics
 st.markdown('## Games length histogram')
-st.markdown(f'''Visualization of how long games take to play when both players have ELO greater than {threshold}.
+st.markdown(f'''Visualization of how long games take to play when both players have ELO greater than `{threshold}`.
 - **x-axis**: number of hands/moves (_plies_) per game.
 - **y-axis**: number of games.''')
 ax = utils.plot_hist(temp['moves'], bin_width=1, title='Squadro moves histogram')
@@ -101,9 +102,12 @@ with cols[2]:
     if player2:
         df_replay = df_replay[(df_replay['winner'] == player2) | (df_replay['loser'] == player2)]
 
-st.dataframe(df_replay)
+max_cap = min(50, len(df_replay)) # Limit the number of games to show
+show_top = st.checkbox(f'Show only top `{max_cap}` results from a total of `{len(df_replay):,.0f}` games.', value=True)
 
-game_selection = st.selectbox('Select a game to visualize from the upper table:', df_replay.index, index=None, placeholder="Choose or type row number", format_func=lambda x: f'{x} - "{df_replay.loc[x]["winner"]}" vs "{df_replay.loc[x]["loser"]}"')
+st.dataframe(df_replay.head(max_cap) if show_top else df_replay)
+
+game_selection = st.selectbox('Select a game to visualize from the upper table:', (df_replay.head(max_cap) if show_top else df_replay).index, index=None, placeholder="Choose or type row number", format_func=lambda x: f'{x} - "{df_replay.loc[x]["winner"]}" vs "{df_replay.loc[x]["loser"]}"')
 if game_selection is not None:
     game_record = df.loc[game_selection]['record']
     winner_is_first_hand = df.loc[game_selection]['winner'] == df.loc[game_selection]['first_hand']
