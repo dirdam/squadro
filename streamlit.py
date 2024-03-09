@@ -1,7 +1,7 @@
 import streamlit as st
 import streamlit.components.v1 as components
 import pandas as pd
-import os
+import os, hashlib
 import src.utils as utils
 
 st.set_page_config(
@@ -82,7 +82,12 @@ st.markdown(f'''Visualization of how long games take to play when both players h
 - **x-axis**: number of hands/moves (_plies_) per game.
 - **y-axis**: number of games.''')
 ax = utils.plot_hist(temp['moves'], bin_width=1, title='Squadro moves histogram')
-st.pyplot(ax.figure)
+data_hash = hashlib.sha256(pd.util.hash_pandas_object(temp['moves']).values).hexdigest()
+if not os.path.exists(f'{download_path}/{data_hash}.png'): # If the image does not exist, save it
+    st.pyplot(ax.figure)
+    ax.figure.savefig(f'{download_path}/{data_hash}.png')
+else: # If the image exists, show it
+    st.image(f'{download_path}/{data_hash}.png')
 
 # Replay
 st.markdown('---')
