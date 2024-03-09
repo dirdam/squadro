@@ -44,6 +44,7 @@ def total_color(column):
     color_hand = 'rgba(200,200,200, 0.5)'
     return ['background-color: %s' % (color_total if (column.name=='Total' and index=='Total') else (color_hand if (index=='Total') else (color_r if (column.name=='Total' and index=='Red') else (color_y if (column.name=='Total' and index=='Yellow') else '')))) for index, x in column.items()]
 
+@st.cache_data
 def plot_hist(df, bin_width=1, title='Histogram'):
     from scipy.stats import skewnorm
     fig, ax = plt.subplots(1, 1)
