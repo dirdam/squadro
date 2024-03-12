@@ -3,6 +3,7 @@ import streamlit.components.v1 as components
 import pandas as pd
 import os, hashlib
 import src.utils as utils
+from datetime import datetime
 
 st.set_page_config(
     page_title="Squadro",
@@ -24,9 +25,10 @@ download_path = 'data' # Local path where the dataset will be downloaded
 file_name = 'Squadro_BGA_history.csv' # Actual file name in the dataset
 
 # Download dataset
-if 'data_downloaded' not in st.session_state:
+today = datetime.now().date()
+if 'last_date' not in st.session_state or today > st.session_state.last_date:
     df = utils.download_kaggle_dataset(dataset_name, download_path, file_name)
-    st.session_state.data_downloaded = True
+    st.session_state.last_date = today
 else:
     df = pd.read_csv(f'{download_path}/{file_name}')
 
