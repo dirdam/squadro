@@ -80,7 +80,7 @@ with per_col:
 
 # Games length statistics
 st.markdown('## Games length histogram')
-st.markdown(f'''Visualization of how long games take to play when both players have ELO greater than `{threshold}`.
+st.markdown(f'''Visualization of how long games take to play when both players have ELO greater than **`{threshold}`**.
 - **x-axis**: number of hands/moves (_plies_) per game.
 - **y-axis**: number of games.''')
 ax = utils.plot_hist(temp['moves'], bin_width=1, title='Squadro moves histogram')
@@ -114,18 +114,35 @@ with cols[2]:
         df_replay = df_replay[(df_replay['winner'] == player2) | (df_replay['loser'] == player2)]
 
 max_cap = min(50, len(df_replay)) # Limit the number of games to show
-show_top = st.checkbox(f'Show only top `{max_cap}` results from a total of `{len(df_replay):,.0f}` games.', value=True)
+show_top = st.checkbox(f'Show only top **`{max_cap}`** results from a total of **`{len(df_replay):,.0f}`** games.', value=True)
 
 st.dataframe(df_replay.head(max_cap) if show_top else df_replay)
 
+color_css = """
+<style>
+.red {
+    color: rgb(140,0,0);
+}
+.yellow {
+    color: rgb(255,160,0);
+}
+</style>
+"""
+st.markdown(color_css, unsafe_allow_html=True)
+
+# Game replay visualization
 game_selection = st.selectbox('Select a game to visualize from the upper table:', (df_replay.head(max_cap) if show_top else df_replay).index, index=None, placeholder="Choose or type row number", format_func=lambda x: f'{x} - "{df_replay.loc[x]["winner"]}" vs "{df_replay.loc[x]["loser"]}"')
 if game_selection is not None:
     game_record = df.loc[game_selection]['record']
     winner_is_first_hand = df.loc[game_selection]['winner'] == df.loc[game_selection]['first_hand']
     winner_color = 'red' if ((game_record[0] == 'r' and winner_is_first_hand) or (game_record[0] == 'y' and not winner_is_first_hand)) else 'yellow'
-    st.markdown(f'### Replay of _{df_replay.loc[game_selection]["winner"]}_ vs _{df_replay.loc[game_selection]["loser"]}_')
-    st.markdown(f'''- Click `▶️` to advance and `◀️` to go backwards. (`▶️▶️` and `◀️◀️` jump faster)
-- Click the top right corner of the board to see the game statistics for `Moves to finish`.
-- Result: _**{df.loc[game_selection]['winner']}**_ (_{winner_color}_) wins.''')
+    loser_color = 'yellow' if winner_color == 'red' else 'red'
+    head_to_head_wins, head_to_head_losses = utils.get_number_of_wins_per_player(df, game_selection)
+    st.markdown(f'### Replay of <span class="{winner_color}">_{df_replay.loc[game_selection]["winner"]}_</span> vs <span class="{loser_color}">_{df_replay.loc[game_selection]["loser"]}_</span>', unsafe_allow_html=True)
+    st.markdown(f'''- Winner: _**{df.loc[game_selection]['winner']}**_.
+    - Total head-to-head wins: _**{df.loc[game_selection]["winner"]}**_ **`{head_to_head_wins}`** - **`{head_to_head_losses}`** _**{df.loc[game_selection]["loser"]}**_.
+- Replay buttons:
+    - Click `▶️` to advance and `◀️` to go backwards. (`▶️▶️` and `◀️◀️` jump faster)
+    - Click the top right corner of the board to see the game statistics for `Moves to finish`.''', unsafe_allow_html=True)
     game_record = utils.code_to_old(game_record)
     components.iframe(f'https://dirdam.github.io/games/squadro_replay.html?code={game_record}', height=600)

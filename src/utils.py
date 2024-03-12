@@ -77,3 +77,11 @@ def code_to_old(code):
             a[i+1] = str(6 - int(a[i+1]))
     code = ''.join(a)
     return code
+
+def get_number_of_wins_per_player(df, game_selection):
+    """Get the number of wins per player"""
+    player1 = df.loc[game_selection]['winner']
+    player2 = df.loc[game_selection]['loser']
+    wins = df[(df['winner'] == player1) & (df['loser'] == player2)].shape[0]
+    losses = df[(df['winner'] == player2) & (df['loser'] == player1)].shape[0]
+    return wins, losses
