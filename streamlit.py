@@ -4,10 +4,11 @@ import pandas as pd
 import os, hashlib
 import src.utils as utils
 from datetime import datetime
+import plotly.express as px
 import logging
 
 # Configure logging
-logging.basicConfig(level=logging.INFO, format='[%(asctime)s] - %(message)s', datefmt='%Y-%m-%d %H:%M:%S')
+logging.basicConfig(level=logging.INFO, format='[%(asctime)s] %(message)s', datefmt='%Y-%m-%d %H:%M:%S')
 
 st.set_page_config(
     page_title="Squadro",
@@ -119,18 +120,20 @@ with cols[2]:
         df_replay = df_replay[(df_replay['winner'] == player2) | (df_replay['loser'] == player2)]
 
 max_cap = min(50, len(df_replay)) # Limit the number of games to show
-show_top = st.checkbox(f'Show only top **`{max_cap}`** results from a total of **`{len(df_replay):,.0f}`** games.', value=True)
+show_top = st.checkbox(f'Show top **`{max_cap}`** results from a total of **`{len(df_replay):,.0f}`** games.', value=True)
 
 st.dataframe(df_replay.head(max_cap) if show_top else df_replay)
 
-color_css = """
+red_rgb = 'rgb(140,0,0)'
+yellow_rgb = 'rgb(255,160,0)'
+color_css = f"""
 <style>
-.red {
-    color: rgb(140,0,0);
-}
-.yellow {
-    color: rgb(255,160,0);
-}
+.red {{
+    color: {red_rgb};
+}}
+.yellow {{
+    color: {yellow_rgb};
+}}
 </style>
 """
 st.markdown(color_css, unsafe_allow_html=True)
@@ -139,15 +142,46 @@ st.markdown(color_css, unsafe_allow_html=True)
 game_selection = st.selectbox('Select a game to visualize from the upper table:', (df_replay.head(max_cap) if show_top else df_replay).index, index=None, placeholder="Choose or type row number", format_func=lambda x: f'{x} - "{df_replay.loc[x]["winner"]}" vs "{df_replay.loc[x]["loser"]}"')
 if game_selection is not None:
     game_record = df.loc[game_selection]['record']
-    winner_is_first_hand = df.loc[game_selection]['winner'] == df.loc[game_selection]['first_hand']
+    winner = df.loc[game_selection]['winner']
+    loser = df.loc[game_selection]['loser']
+    winner_is_first_hand = winner == df.loc[game_selection]['first_hand']
     winner_color = 'red' if ((game_record[0] == 'r' and winner_is_first_hand) or (game_record[0] == 'y' and not winner_is_first_hand)) else 'yellow'
     loser_color = 'yellow' if winner_color == 'red' else 'red'
     head_to_head_wins, head_to_head_losses = utils.get_number_of_wins_per_player(df, game_selection)
     st.markdown(f'### Replay of <span class="{winner_color}">_{df_replay.loc[game_selection]["winner"]}_</span> vs <span class="{loser_color}">_{df_replay.loc[game_selection]["loser"]}_</span>', unsafe_allow_html=True)
-    st.markdown(f'''- Winner: _**{df.loc[game_selection]['winner']}**_.
-    - Total head-to-head wins: _**{df.loc[game_selection]["winner"]}**_ **`{head_to_head_wins}`** - **`{head_to_head_losses}`** _**{df.loc[game_selection]["loser"]}**_.
+    st.markdown(f'''- Winner: _**{winner}**_.
+    - Total head-to-head wins: _**{winner}**_ **`{head_to_head_wins}`** - **`{head_to_head_losses}`** _**{loser}**_.
 - Replay buttons:
     - Click `▶️` to advance and `◀️` to go backwards. (`▶️▶️` and `◀️◀️` jump faster)
     - Click the top right corner of the board to see the game statistics for `Moves to finish`.''', unsafe_allow_html=True)
     game_record = utils.code_to_old(game_record)
     components.iframe(f'https://dirdam.github.io/games/squadro_replay.html?code={game_record}', height=600)
+
+    # Players ELO progression
+    st.markdown('#### Players ELO evolution')
+    # Restrict df to the players in the replay table
+    players_df = df[(df['winner'] == winner) | (df['loser'] == winner) | (df['winner'] == loser) | (df['loser'] == loser)].copy()
+    # Get ELO and date data for each player
+    players_df = players_df[['winner', 'loser', 'elo_winner', 'elo_loser', 'date']]
+    winners = players_df[['winner', 'elo_winner', 'date']].copy()
+    winners.columns = ['player', 'elo', 'date']
+    losers = players_df[['loser', 'elo_loser', 'date']].copy()
+    losers.columns = ['player', 'elo', 'date']
+    elo_df = pd.concat([winners, losers], ignore_index=True) # Concatenating the DataFrames
+    elo_df = elo_df[(elo_df['player'] == winner) | (elo_df['player'] == loser)] # Restrict to winner and loser
+    elo_df = elo_df.sort_values(by='date')
+
+    color_map = {
+        winner: red_rgb if winner_color == 'red' else yellow_rgb,
+        loser: red_rgb if loser_color == 'red' else yellow_rgb
+    }
+    fig = px.line(elo_df, x='date', y='elo', color='player', markers=True, color_discrete_map=color_map)
+    fig.update_layout(
+        title='Historical ELO progression by player',
+        xaxis_title='Date',
+        yaxis_title='ELO'
+    )
+
+    st.plotly_chart(fig)
+
+    # Show a line chart with a line for each of the players' ELO progression
