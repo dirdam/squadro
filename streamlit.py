@@ -4,6 +4,10 @@ import pandas as pd
 import os, hashlib
 import src.utils as utils
 from datetime import datetime
+import logging
+
+# Configure logging
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 
 st.set_page_config(
     page_title="Squadro",
@@ -27,7 +31,7 @@ file_name = 'Squadro_BGA_history.csv' # Actual file name in the dataset
 # Download dataset
 today = datetime.now().date()
 if 'last_date' not in st.session_state or today > st.session_state.last_date:
-    print('Downloading dataset...')
+    logging.info('Downloading dataset...')
     df = utils.download_kaggle_dataset(dataset_name, download_path, file_name)
     st.session_state.last_date = today
 else:
