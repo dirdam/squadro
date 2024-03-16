@@ -33,6 +33,10 @@ file_name = 'Squadro_BGA_history.csv' # Actual file name in the dataset
 today = datetime.now().date()
 if 'last_date' not in st.session_state or today > st.session_state.last_date:
     logging.info('Downloading dataset...')
+    # If dataset file exists, remove it
+    if os.path.exists(f'{download_path}/{file_name}'):
+        os.remove(f'{download_path}/{file_name}')
+    # Download most recent dataset
     df = utils.download_kaggle_dataset(dataset_name, download_path, file_name)
     st.session_state.last_date = today
 else:
