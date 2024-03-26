@@ -1,7 +1,7 @@
 import streamlit as st
 import streamlit.components.v1 as components
 import pandas as pd
-import os, hashlib
+import os, hashlib, glob
 import src.utils as utils
 from datetime import datetime
 import plotly.express as px
@@ -27,20 +27,20 @@ os.environ["KAGGLE_KEY"] = st.secrets["kaggle_key"]
 # Specify the Kaggle dataset
 dataset_name = 'dirdam/squadro-games-played-in-bga' # Kaggle dataset URL
 download_path = 'data' # Local path where the dataset will be downloaded
-file_name = 'Squadro_BGA_history.csv' # Actual file name in the dataset
+file_name = 'Squadro_BGA_history' # Actual file name in the dataset
 
 # Download dataset
-today = datetime.now().date()
-if 'last_date' not in st.session_state or today > st.session_state.last_date:
+datasets = glob.glob(f'{download_path}/{file_name}*') # Find all datasets
+today = datetime.now().date().strftime('%Y%m%d')
+for dataset in datasets:
+    if today not in dataset:
+        os.remove(dataset) # Remove old datasets
+if os.path.exists(f'{download_path}/{file_name}_{today}.csv'): # If today's dataset exists, load it
+    df = pd.read_csv(f'{download_path}/{file_name}_{today}.csv')
+else: # If today's dataset does not exist, download it
     logging.info('Downloading dataset...')
-    # If dataset file exists, remove it
-    if os.path.exists(f'{download_path}/{file_name}'):
-        os.remove(f'{download_path}/{file_name}')
-    # Download most recent dataset
     df = utils.download_kaggle_dataset(dataset_name, download_path, file_name)
-    st.session_state.last_date = today
-else:
-    df = pd.read_csv(f'{download_path}/{file_name}')
+    os.rename(f'{download_path}/{file_name}.csv', f'{download_path}/{file_name}_{today}.csv') # Rename the file to include the date
 
 # Add column
 df['moves'] = df['record'].str.len()//2
@@ -124,7 +124,7 @@ with cols[2]:
         df_replay = df_replay[(df_replay['winner'] == player2) | (df_replay['loser'] == player2)]
 
 max_cap = min(50, len(df_replay)) # Limit the number of games to show
-show_top = st.checkbox(f'Show top **`{max_cap}`** results from a total of **`{len(df_replay):,.0f}`** games.', value=True)
+show_top = st.checkbox(f'Show only top **`{max_cap}`** results from a total of **`{len(df_replay):,.0f}`** games.', value=True)
 
 st.dataframe(df_replay.head(max_cap) if show_top else df_replay)
 
