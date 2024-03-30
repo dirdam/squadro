@@ -40,8 +40,6 @@ if os.path.exists(f'{download_path}/{file_name}_{today}.csv'): # If today's data
 else: # If today's dataset does not exist, download it
     logging.info('Downloading dataset...')
     df = utils.download_kaggle_dataset(dataset_name, download_path, f'{file_name}.csv')
-    datasets = glob.glob(f'{download_path}/{file_name}*') # Find all datasets
-    st.write(datasets)
     shutil.move(f'{download_path}/{file_name}.csv', f'{download_path}/{file_name}_{today}.csv') # Rename the file to include the date
 
 # Add column
