@@ -26,32 +26,32 @@ os.environ["KAGGLE_KEY"] = st.secrets["kaggle_key"]
 
 # Specify the Kaggle dataset
 dataset_name = 'dirdam/squadro-games-played-in-bga' # Kaggle dataset URL
-download_path = 'data' # Local path where the dataset will be downloaded
+data_path = 'data' # Local path where the dataset will be downloaded
 file_name = 'Squadro_BGA_history.csv' # Actual file name in the dataset
 # Registry of last download date
 last_date_file = 'last_download_date.txt'
 
 # Download dataset if today is not the last download date
 today = datetime.now().date().strftime('%Y%m%d')
-if not os.path.exists(last_date_file) or today != open(last_date_file, 'r').read(): # If date file does not exist or today is not the last download date
-    df = utils.download_kaggle_dataset(dataset_name, download_path, file_name)
-    with open(last_date_file, 'w') as f:
+if not os.path.exists(f'{data_path}/{last_date_file}') or today != open(f'{data_path}/{last_date_file}', 'r').read(): # If date file does not exist or today is not the last download date
+    df = utils.download_kaggle_dataset(dataset_name, data_path, file_name)
+    with open(f'{data_path}/{last_date_file}', 'w') as f:
         f.write(today)
 else:
-    df = pd.read_csv(f'{download_path}/{file_name}')
+    df = pd.read_csv(f'{data_path}/{file_name}')
 
-st.write(glob.glob(f'{download_path}/*'))
+st.write(glob.glob(f'{data_path}/*'))
 
 
 
 # for dataset in datasets:
 #     if today not in dataset:
 #         os.remove(dataset) # Remove old datasets
-# if os.path.exists(f'{download_path}/{file_name}_{today}.csv'): # If today's dataset exists, load it
-#     df = pd.read_csv(f'{download_path}/{file_name}_{today}.csv')
+# if os.path.exists(f'{data_path}/{file_name}_{today}.csv'): # If today's dataset exists, load it
+#     df = pd.read_csv(f'{data_path}/{file_name}_{today}.csv')
 # else: # If today's dataset does not exist, download it
-#     df = utils.download_kaggle_dataset(dataset_name, download_path, f'{file_name}.csv')
-#     shutil.move(os.path.join(download_path, f'{file_name}.csv'), os.path.join(download_path, f'{file_name}_{today}.csv')) # Rename the file to include the date
+#     df = utils.download_kaggle_dataset(dataset_name, data_path, f'{file_name}.csv')
+#     shutil.move(os.path.join(data_path, f'{file_name}.csv'), os.path.join(data_path, f'{file_name}_{today}.csv')) # Rename the file to include the date
 
 
 # Add column
@@ -107,11 +107,11 @@ st.markdown(f'''Visualization of how long games take to play when both players h
 - **y-axis**: number of games.''')
 ax = utils.plot_hist(temp['moves'], bin_width=1, title='Squadro moves histogram')
 data_hash = hashlib.sha256(pd.util.hash_pandas_object(temp['moves']).values).hexdigest()
-if not os.path.exists(f'{download_path}/{data_hash}.png'): # If the image does not exist, save it
+if not os.path.exists(f'{data_path}/{data_hash}.png'): # If the image does not exist, save it
     st.pyplot(ax.figure)
-    ax.figure.savefig(f'{download_path}/{data_hash}.png')
+    ax.figure.savefig(f'{data_path}/{data_hash}.png')
 else: # If the image exists, show it
-    st.image(f'{download_path}/{data_hash}.png')
+    st.image(f'{data_path}/{data_hash}.png')
 
 # Replay
 st.markdown('---')
