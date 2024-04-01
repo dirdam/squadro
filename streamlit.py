@@ -37,8 +37,10 @@ if not os.path.exists(last_date_file) or today != open(last_date_file, 'r').read
     df = utils.download_kaggle_dataset(dataset_name, download_path, file_name)
     with open(last_date_file, 'w') as f:
         f.write(today)
+else:
+    df = pd.read_csv(f'{download_path}/{file_name}')
 
-print(glob.glob(f'{download_path}/*'))
+st.write(glob.glob(f'{download_path}/*'))
 
 
 
