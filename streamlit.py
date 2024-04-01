@@ -1,7 +1,7 @@
 import streamlit as st
 import streamlit.components.v1 as components
 import pandas as pd
-import os, hashlib, glob, shutil
+import os, hashlib
 import src.utils as utils
 from datetime import datetime
 import plotly.express as px
@@ -39,20 +39,6 @@ if not os.path.exists(f'{data_path}/{last_date_file}') or today != open(f'{data_
         f.write(today)
 else:
     df = pd.read_csv(f'{data_path}/{file_name}')
-
-st.write(glob.glob(f'{data_path}/*'))
-
-
-
-# for dataset in datasets:
-#     if today not in dataset:
-#         os.remove(dataset) # Remove old datasets
-# if os.path.exists(f'{data_path}/{file_name}_{today}.csv'): # If today's dataset exists, load it
-#     df = pd.read_csv(f'{data_path}/{file_name}_{today}.csv')
-# else: # If today's dataset does not exist, download it
-#     df = utils.download_kaggle_dataset(dataset_name, data_path, f'{file_name}.csv')
-#     shutil.move(os.path.join(data_path, f'{file_name}.csv'), os.path.join(data_path, f'{file_name}_{today}.csv')) # Rename the file to include the date
-
 
 # Add column
 df['moves'] = df['record'].str.len()//2
@@ -107,11 +93,11 @@ st.markdown(f'''Visualization of how long games take to play when both players h
 - **y-axis**: number of games.''')
 ax = utils.plot_hist(temp['moves'], bin_width=1, title='Squadro moves histogram')
 data_hash = hashlib.sha256(pd.util.hash_pandas_object(temp['moves']).values).hexdigest()
-if not os.path.exists(f'{data_path}/{data_hash}.png'): # If the image does not exist, save it
+if not os.path.exists(f'{data_path}/image_{threshold}.png'): # If the image does not exist, save it
     st.pyplot(ax.figure)
-    ax.figure.savefig(f'{data_path}/{data_hash}.png')
+    ax.figure.savefig(f'{data_path}/image_{threshold}.png')
 else: # If the image exists, show it
-    st.image(f'{data_path}/{data_hash}.png')
+    st.image(f'{data_path}/image_{threshold}.png')
 
 # Replay
 st.markdown('---')
