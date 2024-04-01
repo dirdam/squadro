@@ -27,20 +27,30 @@ os.environ["KAGGLE_KEY"] = st.secrets["kaggle_key"]
 # Specify the Kaggle dataset
 dataset_name = 'dirdam/squadro-games-played-in-bga' # Kaggle dataset URL
 download_path = 'data' # Local path where the dataset will be downloaded
-file_name = 'Squadro_BGA_history' # Actual file name in the dataset
+file_name = 'Squadro_BGA_history.csv' # Actual file name in the dataset
+# Registry of last download date
+last_date_file = 'last_download_date.txt'
 
-# Download dataset
-datasets = glob.glob(f'{download_path}/{file_name}*') # Find all datasets
+# Download dataset if today is not the last download date
 today = datetime.now().date().strftime('%Y%m%d')
-for dataset in datasets:
-    if today not in dataset:
-        os.remove(dataset) # Remove old datasets
-if os.path.exists(f'{download_path}/{file_name}_{today}.csv'): # If today's dataset exists, load it
-    df = pd.read_csv(f'{download_path}/{file_name}_{today}.csv')
-else: # If today's dataset does not exist, download it
-    logging.info('Downloading dataset...')
-    df = utils.download_kaggle_dataset(dataset_name, download_path, f'{file_name}.csv')
-    shutil.move(f'{download_path}/{file_name}.csv', f'{download_path}/{file_name}_{today}.csv') # Rename the file to include the date
+if not os.path.exists(last_date_file) or today != open(last_date_file, 'r').read(): # If date file does not exist or today is not the last download date
+    df = utils.download_kaggle_dataset(dataset_name, download_path, file_name)
+    with open(last_date_file, 'w') as f:
+        f.write(today)
+
+print(glob.glob(f'{download_path}/*'))
+
+
+
+# for dataset in datasets:
+#     if today not in dataset:
+#         os.remove(dataset) # Remove old datasets
+# if os.path.exists(f'{download_path}/{file_name}_{today}.csv'): # If today's dataset exists, load it
+#     df = pd.read_csv(f'{download_path}/{file_name}_{today}.csv')
+# else: # If today's dataset does not exist, download it
+#     df = utils.download_kaggle_dataset(dataset_name, download_path, f'{file_name}.csv')
+#     shutil.move(os.path.join(download_path, f'{file_name}.csv'), os.path.join(download_path, f'{file_name}_{today}.csv')) # Rename the file to include the date
+
 
 # Add column
 df['moves'] = df['record'].str.len()//2

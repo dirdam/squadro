@@ -7,9 +7,11 @@ import matplotlib.pyplot as plt
 def download_kaggle_dataset(dataset_name, path='data', file_name=None):
     """Download a Kaggle dataset to a specified path."""
     from kaggle.api.kaggle_api_extended import KaggleApi
+    import logging
     # No need to manually authenticate since they've been set as environment variables
     api = KaggleApi()
     api.authenticate()
+    logging.info('Downloading dataset...')
     api.dataset_download_files(dataset_name, path=path, unzip=True)
     df = pd.read_csv(f'{path}/{file_name}')
     return df
