@@ -33,7 +33,9 @@ last_date_file = 'last_download_date.txt'
 
 # Download dataset if today is not the last download date
 today = datetime.now().date().strftime('%Y%m%d')
-if not os.path.exists(f'{data_path}/{last_date_file}') or today != open(f'{data_path}/{last_date_file}', 'r').read(): # If date file does not exist or today is not the last download date
+last_date = open(f'{data_path}/{last_date_file}', 'r').read() if os.path.exists(f'{data_path}/{last_date_file}') else None
+logging.info(f'Today: {today}, Last download date: {last_date}')
+if today != last_date: # If date file does not exist or today is not the last download date
     df = utils.download_kaggle_dataset(dataset_name, data_path, file_name)
     with open(f'{data_path}/{last_date_file}', 'w') as f:
         f.write(today)
