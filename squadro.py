@@ -1,11 +1,14 @@
 import streamlit as st
 import streamlit.components.v1 as components
 import pandas as pd
-import os, hashlib
+import os, hashlib, sys
 import src.utils as utils
 from datetime import datetime
 import plotly.express as px
 import logging
+
+# Add the root directory to Python's PATH to make the 'src' package discoverable
+sys.path.append(os.path.dirname(os.path.abspath(__file__))) # Appends the directory of the current file to the PATH
 
 # Configure logging
 logging.basicConfig(level=logging.INFO, format='[%(asctime)s] %(message)s', datefmt='%Y-%m-%d %H:%M:%S')
