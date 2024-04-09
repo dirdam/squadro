@@ -1,8 +1,8 @@
+import src.utils as utils
 import streamlit as st
 import streamlit.components.v1 as components
 import pandas as pd
 import os, hashlib, glob
-import src.utils as utils
 from datetime import datetime
 import plotly.express as px
 import logging
