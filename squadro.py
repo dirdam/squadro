@@ -1,14 +1,11 @@
 import streamlit as st
 import streamlit.components.v1 as components
 import pandas as pd
-import os, hashlib, sys
+import os, hashlib, glob
 import src.utils as utils
 from datetime import datetime
 import plotly.express as px
 import logging
-
-# Add the root directory to Python's PATH to make the 'src' package discoverable
-sys.path.append(os.path.dirname(os.path.abspath(__file__))) # Appends the directory of the current file to the PATH
 
 # Configure logging
 logging.basicConfig(level=logging.INFO, format='[%(asctime)s] %(message)s', datefmt='%Y-%m-%d %H:%M:%S')
@@ -39,7 +36,12 @@ today = datetime.now().date().strftime('%Y%m%d')
 last_date = open(f'{data_path}/{last_date_file}', 'r').read() if os.path.exists(f'{data_path}/{last_date_file}') else None
 if today != last_date: # If date file does not exist or today is not the last download date
     # Remove the old file if it exists
-    os.remove(f'{data_path}/{file_name}')
+    if os.path.exists(f'{data_path}/{file_name}'):
+        os.remove(f'{data_path}/{file_name}')
+    # Remove images. Since data changes images need to be updated too
+    image_files = glob.glob(f'{data_path}/*.png')
+    for file in image_files:
+        os.remove(file)
     df = utils.download_kaggle_dataset(dataset_name, data_path, file_name)
     with open(f'{data_path}/{last_date_file}', 'w') as f:
         f.write(today)
