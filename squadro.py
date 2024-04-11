@@ -66,7 +66,7 @@ st.markdown( # Center the sidebar content
     """, unsafe_allow_html=True
 )
 with st.sidebar:
-    st.markdown('''# For and by [Squadristas](https://boardgamearena.com/gamepanel?game=squadro)''')
+    st.markdown('''# By and for [Squadristas](https://boardgamearena.com/gamepanel?game=squadro)''')
     st.image('https://dirdam.github.io/images/logo_squadro_transparent.png', use_column_width=True)
 
 # Main content
