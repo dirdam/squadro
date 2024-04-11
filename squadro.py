@@ -34,7 +34,7 @@ last_date_file = 'last_download_date.txt'
 # Download dataset if today is not the last download date
 today = datetime.now().date().strftime('%Y%m%d')
 last_date = open(f'{data_path}/{last_date_file}', 'r').read() if os.path.exists(f'{data_path}/{last_date_file}') else None
-if today != last_date: # If date file does not exist or today is not the last download date
+if today != last_date or not os.path.exists(f'{data_path}/{file_name}'): # If date file does not exist or today is not the last download date
     # Remove the old file if it exists
     if os.path.exists(f'{data_path}/{file_name}'):
         os.remove(f'{data_path}/{file_name}')
