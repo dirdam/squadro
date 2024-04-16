@@ -3,7 +3,7 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 
-@st.cache_data
+#@st.cache_data # If this function is cached the data doesn't get reloaded when the date changes
 def download_kaggle_dataset(dataset_name, path='data', file_name=None):
     """Download a Kaggle dataset to a specified path."""
     from kaggle.api.kaggle_api_extended import KaggleApi
