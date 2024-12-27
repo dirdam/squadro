@@ -114,9 +114,9 @@ def plotly_histogram(df, bin_width=1, title='Histogram'):
         legend=dict(
             orientation="h",  # Horizontal legend
             x=0.5,
-            y=1,
+            y=-0.2,
             xanchor="center",
-            yanchor="bottom"
+            yanchor="top"
         ),
         title=dict(text=title, font=dict(size=16, family="Arial", color="black")),
         xaxis_title="Number of hands/moves per game",
