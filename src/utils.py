@@ -63,7 +63,7 @@ def plotly_histogram(df, bin_width=1, title='Histogram'):
             marker=dict(color=hist_color, line=dict(width=0.1, color="white")),
             opacity=0.5,
             name="Games by game length",
-            hovertemplate="Games of length %{x}: " + f"<span style='color:{hist_color};'>" + "%{y}</span><extra></extra>",  # Custom tooltip
+            hovertemplate="Games of length %{x}: " + f"<span style='color:{hist_color};'>" + "%{y}</span><extra></extra>",
         )
     )
     # Fit skewnorm distribution to the data
@@ -95,7 +95,7 @@ def plotly_histogram(df, bin_width=1, title='Histogram'):
             mode='lines',
             line=dict(color='green', width=2),
             name=f"Mean: {mean_value:.2f}",
-            hoverinfo="skip",  # Skip the hover information
+            hoverinfo="skip",
         )
     )
     fig.add_trace(
@@ -105,15 +105,25 @@ def plotly_histogram(df, bin_width=1, title='Histogram'):
             mode='lines',
             line=dict(color='blue', width=2, dash='dash'),
             name=f"Median: {median_value:.2f}",
-            hoverinfo="skip",  # Skip the hover information
+            hoverinfo="skip",
         )
     )
+    
+    # Set legend to the bottom
     fig.update_layout(
+        legend=dict(
+            orientation="h",  # Horizontal legend
+            x=0.5,
+            y=1.12,
+            xanchor="center",
+            yanchor="top"
+        ),
         title=dict(text=title, font=dict(size=16, family="Arial", color="black")),
         xaxis_title="Number of hands/moves per game",
         yaxis_title="Number of games",
         bargap=0.1,
     )
+    
     return fig
 
 def code_to_old(code):

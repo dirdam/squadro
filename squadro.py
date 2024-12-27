@@ -107,11 +107,8 @@ with tab1:
 
     bin_width = st.select_slider('Select bin width for the histogram:', options=[1, 5, 10, 20, 50], value=1)
     data_hash = hashlib.sha256(pd.util.hash_pandas_object(temp['moves']).values).hexdigest()
-    if not os.path.exists(f'{data_path}/image_{threshold}.png'):  # If the image does not exist, save it
-        fig = utils.plotly_histogram(temp, bin_width=bin_width, title='Squadro moves histogram')
-        st.plotly_chart(fig, use_container_width=True)
-    else:  # If the image exists, show it
-        st.image(f'{data_path}/image_{threshold}.png')
+    fig = utils.plotly_histogram(temp, bin_width=bin_width, title='Squadro moves histogram')
+    st.plotly_chart(fig, use_container_width=True)
 
 # Replay
 with tab2:
