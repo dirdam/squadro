@@ -1,7 +1,8 @@
 import streamlit as st
 import pandas as pd
 import numpy as np
-import matplotlib.pyplot as plt
+import plotly.graph_objects as go
+
 
 #@st.cache_data # If this function is cached the data doesn't get reloaded when the date changes
 def download_kaggle_dataset(dataset_name, path='data', file_name=None):
@@ -49,25 +50,71 @@ def total_color(column):
     return ['background-color: %s' % (color_total if (column.name=='Total' and index=='Total') else (color_hand if (index=='Total') else (color_r if (column.name=='Total' and index=='Red') else (color_y if (column.name=='Total' and index=='Yellow') else '')))) for index, x in column.items()]
 
 @st.cache_data
-def plot_hist(df, bin_width=1, title='Histogram'):
+def plotly_histogram(df, bin_width=1, title='Histogram'):
     from scipy.stats import skewnorm
-    fig, ax = plt.subplots(1, 1)
-    # Histogram
-    bin_width = bin_width
-    bins = [i for i in range(df.min(), df.max(), bin_width)]
-    df.hist(bins=bins, edgecolor='white', grid=False, figsize=(20,8), alpha=0.5, ax=ax)
-    ax.set_title(title, fontsize=16, fontweight='bold')
-    # Distribution data
-    a, loc, scale = skewnorm.fit(df)
-    x = np.linspace(df.min(), df.max(), 100)
-    prop = len(df)*bin_width
-    ax.plot(x, prop*skewnorm.pdf(x, a, loc, scale), 'r-', lw=1, alpha=1, label=f'distribution approximation')
-    ax.axvline(x=df.mean(), color='g', label=f'mean: {df.mean():.2f}')
-    ax.axvline(x=df.median(), color='g', linestyle='--', label=f'median: {df.median():.2f}')
-    ax.legend()
-    ax.set_xlabel('Number of hands/moves per game', fontsize=16)
-    ax.set_ylabel('Number of games', fontsize=16)
-    return ax
+    bins = list(range(df["moves"].min(), df["moves"].max() + bin_width, bin_width))
+
+    fig = go.Figure()
+    hist_color = "blue"
+    fig.add_trace(
+        go.Histogram(
+            x=df["moves"],
+            xbins=dict(start=bins[0], end=bins[-1], size=bin_width),  # Force bin width
+            marker=dict(color=hist_color, line=dict(width=0.1, color="white")),
+            opacity=0.5,
+            name="Games by game length",
+            hovertemplate="Games of length %{x}: " + f"<span style='color:{hist_color};'>" + "%{y}</span><extra></extra>",  # Custom tooltip
+        )
+    )
+    # Fit skewnorm distribution to the data
+    a, loc, scale = skewnorm.fit(df["moves"])
+    x = np.linspace(df["moves"].min(), df["moves"].max(), 100)
+    prop = len(df["moves"]) * bin_width
+    skew_y = prop * skewnorm.pdf(x, a, loc, scale)
+    # Add skewnorm line as a secondary trace
+    dist_color = "red"
+    dist_label = "Distribution approximation"
+    fig.add_trace(
+        go.Scatter(
+            x=x,
+            y=skew_y,
+            mode='lines',
+            line=dict(color=dist_color, width=2),
+            name=dist_label,
+            hoverinfo="skip",  # Skip the hover information
+        )
+    )
+    # Add mean and median lines
+    mean_value = df["moves"].mean()
+    median_value = df["moves"].median()
+    max_bin_height = df["moves"].value_counts(bins=len(range(df["moves"].min(), df["moves"].max() + 1, bin_width))).max()
+    fig.add_trace(
+        go.Scatter(
+            x=[mean_value, mean_value],
+            y=[0, max_bin_height],
+            mode='lines',
+            line=dict(color='green', width=2),
+            name=f"Mean: {mean_value:.2f}",
+            hoverinfo="skip",  # Skip the hover information
+        )
+    )
+    fig.add_trace(
+        go.Scatter(
+            x=[median_value, median_value],
+            y=[0, max_bin_height],
+            mode='lines',
+            line=dict(color='blue', width=2, dash='dash'),
+            name=f"Median: {median_value:.2f}",
+            hoverinfo="skip",  # Skip the hover information
+        )
+    )
+    fig.update_layout(
+        title=dict(text=title, font=dict(size=16, family="Arial", color="black")),
+        xaxis_title="Number of hands/moves per game",
+        yaxis_title="Number of games",
+        bargap=0.1,
+    )
+    return fig
 
 def code_to_old(code):
     a = list(code)
