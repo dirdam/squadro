@@ -144,3 +144,17 @@ def get_number_of_wins_per_player(df, game_selection):
     wins = df[(df['winner'] == player1) & (df['loser'] == player2)].shape[0]
     losses = df[(df['winner'] == player2) & (df['loser'] == player1)].shape[0]
     return wins, losses
+
+def get_world_ranking(df):
+    """Get the world ranking of the players"""
+    # Get elo of all players
+    players_elo = df[['date', 'winner', 'elo_winner']].copy()
+    players_elo.columns = ['date', 'player', 'elo']
+    players_elo = pd.concat([players_elo, df[['date', 'loser', 'elo_loser']].rename(columns={'loser': 'player', 'elo_loser': 'elo'})])
+    # Get latest record of each player
+    players_elo = players_elo.sort_values('date', ascending=False).groupby('player').head(1)
+    # Limit to elo > 100
+    players_elo = players_elo[players_elo['elo'] > 100]
+    # Sort by elo and date
+    players_elo = players_elo.sort_values(['elo', 'date'], ascending=False)
+    return players_elo.reset_index(drop=True)

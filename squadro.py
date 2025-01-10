@@ -77,7 +77,7 @@ st.markdown(f'''As explained in the dataset description, the dataset contains in
 - Number of games registered: **`{len(df):,.0f}`** games.''')
 
 # Tabs
-tab1, tab2 = st.tabs(['📈 Games statistics', '▶️ Replay specific game'])
+tab1, tab2, tab3 = st.tabs(['📈 Games statistics', '🏆 World ranking', '▶️ Replay specific game'])
 # Cross tables
 with tab1:
     st.markdown('## Restrict by ELO')
@@ -94,10 +94,10 @@ with tab1:
     ct_col, per_col = st.columns(2)
     with ct_col:
         st.markdown('### Total number')
-        st.write(cross_table.style.apply(utils.total_color).format("{:,.0f}"))
+        st.dataframe(cross_table.style.apply(utils.total_color).format("{:,.0f}"))
     with per_col:
         st.write('### Percentage')
-        st.write(percentage_table.style.apply(utils.total_color))
+        st.dataframe(percentage_table.style.apply(utils.total_color))
 
     # Games length statistics
     st.markdown('## Games length histogram')
@@ -110,8 +110,25 @@ with tab1:
     fig = utils.plotly_histogram(temp, bin_width=bin_width, title='Squadro moves histogram')
     st.plotly_chart(fig, use_container_width=True)
 
-# Replay
+# World ranking
 with tab2:
+    st.markdown('## World ranking')
+    st.markdown('''The table only shows players with ELO greater than **100**.
+- Scroll to see more players.
+- Click a column name to sort it.
+- Hover over the table to see the download (`⬇️`) and search (`🔍`) buttons.''')
+    ranking = utils.get_world_ranking(df)
+    ranking = ranking[['player', 'elo', 'date']]
+    ranking.index += 1 # Start the ranking at 1
+    ranking.index.name = 'Rank'
+    cols = {'date': 'Last game date', 'player': 'Player', 'elo': 'ELO'}
+    ranking = ranking.rename(columns=cols)
+    # Show the ranking table
+    st.dataframe(ranking, use_container_width=True)
+    st.markdown('''※ _This ranking shows all historical players. Players that haven't played for 3 months disappear from the BGA official ranking, but they will still appear here._''')
+
+# Replay
+with tab3:
     st.markdown('## Replay specific game')
     st.markdown('Filter and choose which game you would like to replay.')
     df_replay_all = df[['date', 'winner', 'loser', 'elo_winner', 'elo_loser', 'moves']].copy()
@@ -136,7 +153,7 @@ with tab2:
     show_top = st.checkbox(f'Show only top **`{max_cap}`** results from a total of **`{len(df_replay):,.0f}`** games.', value=True)
 
     row_height = 35
-    st.dataframe(df_replay.head(max_cap) if show_top else df_replay, height=6*row_height) # Limits the height of the table to 6 rows
+    st.dataframe(df_replay.head(max_cap) if show_top else df_replay, height=6*row_height, use_container_width=True) # Limits the height of the table to 6 rows
 
     red_rgb = 'rgb(140,0,0)'
     yellow_rgb = 'rgb(255,160,0)'
