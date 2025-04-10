@@ -128,7 +128,7 @@ with tab2:
     st.markdown('''※ _This ranking shows all historical players. Players that haven't played for 3 months disappear from the BGA official ranking, but they will still appear here._''')
     # Show the ranking evolution
     st.markdown('''## ELO evolution by player''')
-    players = ranking['Player'].unique()
+    players = ranking['Player'].copy()
     players_display = [f'{i+1}. {p} [{ranking[ranking["Player"] == p]["ELO"].values[0]:,.0f}]' for i, p in enumerate(players)]
     player = st.selectbox('Select player:', players_display, index=None, placeholder="Choose or type name")
     if player:
@@ -154,7 +154,23 @@ with tab2:
         )
         # Shows a line chart with a line for each of the players' ELO progression
         st.plotly_chart(fig, use_container_width=True)
-
+        # Table showing the start date of playing, the maximum ELO and the current ELO
+        st.markdown(f'#### Some statistics of *{player}*')
+        stats_df = pd.DataFrame({
+            "Stat": [
+                "First game played",
+                "Last game played",
+                "Current ELO / Maximum ELO",
+                "Total games played",
+            ],
+            "Value": [
+                elo_df['date'].min(),
+                elo_df['date'].max(),
+                f"{elo_df['elo'].iloc[-1]} / {elo_df['elo'].max()}",
+                f"{len(player_df):,} ({len(player_df[player_df['winner'] == player]):,} wins; {len(player_df[player_df['loser'] == player]):,} losses)",
+            ]
+        })
+        st.table(stats_df.set_index('Stat'))
 
 # Replay
 with tab3:
