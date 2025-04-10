@@ -116,7 +116,7 @@ with tab2:
     st.markdown('''The table only shows players with ELO greater than **100**.
 - Scroll to see more players.
 - Click a column name to sort it.
-- Hover over the table to see the download (`⬇️`) and search (`🔍`) buttons.''')
+- Hover over the table to reveal the download (`⬇️`) and search (`🔍`) buttons.''')
     ranking = utils.get_world_ranking(df)
     ranking = ranking[['player', 'elo', 'date']]
     ranking.index += 1 # Start the ranking at 1
@@ -126,6 +126,35 @@ with tab2:
     # Show the ranking table
     st.dataframe(ranking, use_container_width=True)
     st.markdown('''※ _This ranking shows all historical players. Players that haven't played for 3 months disappear from the BGA official ranking, but they will still appear here._''')
+    # Show the ranking evolution
+    st.markdown('''## ELO evolution by player''')
+    players = ranking['Player'].unique()
+    players_display = [f'{i+1}. {p} [{ranking[ranking["Player"] == p]["ELO"].values[0]:,.0f}]' for i, p in enumerate(players)]
+    player = st.selectbox('Select player:', players_display, index=None, placeholder="Choose or type name")
+    if player:
+        player = ' '.join(player.split(' ')[1:-1]) # Remove the rank and brackets
+        player_df = df[(df['winner'] == player) | (df['loser'] == player)].copy()
+        player_df = player_df[['winner', 'loser', 'elo_winner', 'elo_loser', 'date']]
+        winners = player_df[['winner', 'elo_winner', 'date']].copy()
+        winners.columns = ['player', 'elo', 'date']
+        losers = player_df[['loser', 'elo_loser', 'date']].copy()
+        losers.columns = ['player', 'elo', 'date']
+        elo_df = pd.concat([winners, losers], ignore_index=True) # Concatenating the DataFrames
+        elo_df = elo_df[(elo_df['player'] == player)]
+        elo_df = elo_df.sort_values(by='date')
+        orange_rgb = 'rgb(209,96,0)'
+        color_map = {
+            player: orange_rgb
+        }
+        fig = px.line(elo_df, x='date', y='elo', color='player', markers=True, color_discrete_map=color_map)
+        fig.update_layout(
+            title=f'Historical ELO progression of {player}',
+            xaxis_title='Date',
+            yaxis_title='ELO'
+        )
+        # Shows a line chart with a line for each of the players' ELO progression
+        st.plotly_chart(fig, use_container_width=True)
+
 
 # Replay
 with tab3:
